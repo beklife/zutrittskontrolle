@@ -1,0 +1,121 @@
+<h1>Verwaltung</h1>
+
+<!-- Status messages for screen readers (e.g. "… ist jetzt gesperrt."). -->
+<p class="status-message" role="status">{{ status() }}</p>
+
+<h2>Spieler</h2>
+@if (players.error()) {
+  <p class="error" role="alert">Die Spielerliste konnte nicht geladen werden.</p>
+}
+<table>
+  <caption class="visually-hidden">Alle Spieler</caption>
+  <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Geburtsdatum</th>
+      <th scope="col">Status</th>
+      <th scope="col">Aktion</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (player of players.value(); track player.id) {
+      <tr>
+        <td>{{ player.lastName }}, {{ player.firstName }}</td>
+        <td>{{ formatIsoDate(player.birthDate) }}</td>
+        <td>
+          @if (player.blocked) {
+            <span class="status status--denied"><span aria-hidden="true">⛔ </span>Gesperrt</span>
+          } @else {
+            <span class="status status--granted"><span aria-hidden="true">✓ </span>Aktiv</span>
+          }
+        </td>
+        <td>
+          <button
+            class="btn btn--secondary"
+            type="button"
+            [attr.aria-label]="player.firstName + ' ' + player.lastName + (player.blocked ? ' entsperren' : ' sperren')"
+            (click)="toggleBlocked(player)"
+          >
+            {{ player.blocked ? 'Entsperren' : 'Sperren' }}
+          </button>
+        </td>
+      </tr>
+    } @empty {
+      <tr>
+        <td colspan="4">Keine Spieler vorhanden.</td>
+      </tr>
+    }
+  </tbody>
+</table>
+
+<h2 id="add-heading">Spieler hinzufügen</h2>
+<form class="add-form" [formGroup]="form" (ngSubmit)="submit()" aria-labelledby="add-heading" novalidate>
+  <div class="field">
+    <label for="firstName">Vorname</label>
+    <input
+      id="firstName"
+      type="text"
+      formControlName="firstName"
+      autocomplete="off"
+      [attr.aria-invalid]="showError('firstName')"
+      [attr.aria-describedby]="showError('firstName') ? 'firstName-error' : null"
+    />
+    @if (showError('firstName')) {
+      <p id="firstName-error" class="field-error">
+        @if (form.controls.firstName.hasError('maxlength')) {
+          Der Vorname darf höchstens 50 Zeichen haben.
+        } @else {
+          Bitte einen Vornamen eingeben.
+        }
+      </p>
+    }
+  </div>
+
+  <div class="field">
+    <label for="lastName">Nachname</label>
+    <input
+      id="lastName"
+      type="text"
+      formControlName="lastName"
+      autocomplete="off"
+      [attr.aria-invalid]="showError('lastName')"
+      [attr.aria-describedby]="showError('lastName') ? 'lastName-error' : null"
+    />
+    @if (showError('lastName')) {
+      <p id="lastName-error" class="field-error">
+        @if (form.controls.lastName.hasError('maxlength')) {
+          Der Nachname darf höchstens 50 Zeichen haben.
+        } @else {
+          Bitte einen Nachnamen eingeben.
+        }
+      </p>
+    }
+  </div>
+
+  <div class="field">
+    <label for="birthDate">Geburtsdatum</label>
+    <input
+      id="birthDate"
+      type="date"
+      formControlName="birthDate"
+      [max]="maxDate"
+      [attr.aria-invalid]="showError('birthDate')"
+      [attr.aria-describedby]="showError('birthDate') ? 'birthDate-error' : null"
+    />
+    @if (showError('birthDate')) {
+      <p id="birthDate-error" class="field-error">
+        @if (form.controls.birthDate.hasError('pastDate')) {
+          Das Geburtsdatum muss in der Vergangenheit liegen.
+        } @else {
+          Bitte ein Geburtsdatum eingeben.
+        }
+      </p>
+    }
+  </div>
+
+  @if (serverError()) {
+    <p class="error" role="alert">{{ serverError() }}</p>
+  }
+
+  <button class="btn" type="submit" [disabled]="saving()">Spieler hinzufügen</button>
+</form>

@@ -1,0 +1,31 @@
+.diagram {
+  margin: 1rem 0;
+
+  &__flow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.75rem;
+  }
+
+  &__box {
+    flex: 1 1 8rem;
+    padding: 0.75rem;
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius);
+    text-align: center;
+    font-weight: 600;
+    position: relative;
+
+    small {
+      font-weight: 400;
+      color: var(--color-muted);
+    }
+  }
+
+  figcaption {
+    color: var(--color-muted);
+  }
+}

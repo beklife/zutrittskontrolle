@@ -1,0 +1,58 @@
+.check-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0 1rem;
+  margin-top: 1.5rem;
+
+  .field {
+    margin-bottom: 0;
+  }
+}
+
+.btn--large {
+  font-size: 1.125rem;
+  padding: 0.6rem 2rem;
+}
+
+.result-region {
+  margin-top: 2rem;
+  min-height: 7rem;
+}
+
+// Result is shown with icon + text + color, never color alone.
+.result {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  border: 3px solid;
+
+  &--granted {
+    color: var(--color-granted);
+    background: var(--color-granted-bg);
+  }
+
+  &--denied {
+    color: var(--color-denied);
+    background: var(--color-denied-bg);
+  }
+
+  &__icon {
+    font-size: 3.5rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  &__text {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  &__meta {
+    margin: 0.25rem 0 0;
+    color: var(--color-text);
+  }
+}

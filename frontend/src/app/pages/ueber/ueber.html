@@ -1,0 +1,40 @@
+<h1>Über das Projekt</h1>
+
+<p>
+  Diese Demo zeigt eine einfache <strong>Zutrittskontrolle</strong> für eine erfundene Spielhalle.
+  Am Eingang wird geprüft, ob ein Spieler eintreten darf: Er muss mindestens 18 Jahre alt sein
+  und darf nicht gesperrt sein. Jeder Versuch wird protokolliert. Das Personal kann Spieler anlegen und sperren.
+</p>
+<p>Alle Namen und Daten sind erfunden. Die Daten werden jede Nacht um 3 Uhr zurückgesetzt.</p>
+
+<h2>Regeln</h2>
+<ol>
+  <li>Spieler gesperrt → <strong>Zutritt verweigert: gesperrt</strong> (diese Regel hat Vorrang)</li>
+  <li>Spieler jünger als 18 → <strong>Zutritt verweigert: unter 18</strong></li>
+  <li>Sonst → <strong>Zutritt erlaubt</strong></li>
+</ol>
+
+<h2>Architektur</h2>
+<figure class="diagram">
+  <ol class="diagram__flow" aria-label="Weg einer Anfrage">
+    <li class="diagram__box">Browser<br /><small>Angular</small></li>
+    <li class="diagram__box">Traefik<br /><small>HTTPS, Rate-Limit</small></li>
+    <li class="diagram__box">Backend<br /><small>Spring Boot (REST)</small></li>
+    <li class="diagram__box">Datenbank<br /><small>PostgreSQL</small></li>
+  </ol>
+  <figcaption>
+    Der Browser lädt die Angular-App. Anfragen an <code>/api</code> leitet Traefik an das Spring-Boot-Backend weiter.
+    Im Backend gilt: Controller → Service → Repository → Datenbank.
+  </figcaption>
+</figure>
+
+<h2>Technik</h2>
+<ul>
+  <li>Backend: Java 21, Spring Boot, Spring Data JPA, Flyway, Bean Validation</li>
+  <li>Datenbank: PostgreSQL 16</li>
+  <li>Frontend: Angular (Standalone Components, Signals), SCSS</li>
+  <li>Tests: JUnit 5, Mockito, AssertJ, Testcontainers, MockMvc, Playwright mit axe</li>
+  <li>Betrieb: Docker, docker-compose, Traefik mit Let's Encrypt, GitHub Actions</li>
+</ul>
+
+<p>Quellcode: <a [href]="githubUrl" rel="noopener">Projekt auf GitHub</a></p>

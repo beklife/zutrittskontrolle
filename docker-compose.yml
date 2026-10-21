@@ -1,0 +1,21 @@
+# Nur für die lokale Entwicklung: startet PostgreSQL 16.
+# Port 5433 statt 5432, damit es keinen Konflikt mit einem lokal installierten PostgreSQL gibt.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: zutritt
+      POSTGRES_USER: zutritt
+      POSTGRES_PASSWORD: zutritt
+    ports:
+      - "5433:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zutritt -d zutritt"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  db-data:

@@ -1,0 +1,41 @@
+<h1>Protokoll</h1>
+<p class="hint">Jeder Zutrittsversuch wird gespeichert – erlaubt oder nicht. Uhrzeiten in deutscher Zeit.</p>
+
+<div class="field">
+  <label for="date">Datum</label>
+  <input id="date" type="date" [value]="date()" (change)="onDateChange($any($event.target).value)" />
+</div>
+
+@if (attempts.error()) {
+  <p class="error" role="alert">Das Protokoll konnte nicht geladen werden.</p>
+}
+
+<table>
+  <caption>
+    Zutrittsversuche am {{ formatIsoDate(date()) }} ({{ attempts.value().length }})
+  </caption>
+  <thead>
+    <tr>
+      <th scope="col">Uhrzeit</th>
+      <th scope="col">Spieler</th>
+      <th scope="col">Ergebnis</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (attempt of attempts.value(); track attempt.id) {
+      <tr>
+        <td>{{ formatBerlinTime(attempt.attemptedAt) }}</td>
+        <td>{{ attempt.playerName }}</td>
+        <td>
+          <span class="status" [class.status--granted]="attempt.granted" [class.status--denied]="!attempt.granted">
+            <span aria-hidden="true">{{ attempt.granted ? '✓ ' : '✕ ' }}</span>{{ reasonText(attempt.reason) }}
+          </span>
+        </td>
+      </tr>
+    } @empty {
+      <tr>
+        <td colspan="3">Keine Zutrittsversuche an diesem Tag.</td>
+      </tr>
+    }
+  </tbody>
+</table>

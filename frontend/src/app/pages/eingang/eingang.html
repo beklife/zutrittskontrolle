@@ -1,0 +1,37 @@
+<h1>Eingang</h1>
+<p class="hint">Wählen Sie einen Spieler aus und prüfen Sie, ob er die Spielhalle betreten darf.</p>
+
+@if (players.error()) {
+  <p class="error" role="alert">Die Spielerliste konnte nicht geladen werden.</p>
+}
+
+<form class="check-form" (ngSubmit)="check()">
+  <div class="field">
+    <label for="player">Spieler</label>
+    <select id="player" name="player" [(ngModel)]="selectedPlayerId" required>
+      <option [ngValue]="null" disabled>Bitte auswählen …</option>
+      @for (player of players.value(); track player.id) {
+        <option [ngValue]="player.id">{{ player.lastName }}, {{ player.firstName }}</option>
+      }
+    </select>
+  </div>
+  <button class="btn btn--large" type="submit" [disabled]="selectedPlayerId() === null || checking()">
+    {{ checking() ? 'Wird geprüft …' : 'Prüfen' }}
+  </button>
+</form>
+
+<!-- aria-live: screen readers read changes in this area automatically. The element must always exist. -->
+<div class="result-region" aria-live="polite" aria-atomic="true">
+  @if (result(); as r) {
+    <div class="result" [class.result--granted]="r.granted" [class.result--denied]="!r.granted" data-testid="result">
+      <span class="result__icon" aria-hidden="true">{{ r.granted ? '✓' : '✕' }}</span>
+      <div>
+        <p class="result__text">{{ reasonText(r.reason) }}</p>
+        <p class="result__meta">{{ r.playerName }} · {{ formatBerlinTime(r.attemptedAt) }} Uhr</p>
+      </div>
+    </div>
+  }
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+</div>

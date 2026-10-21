@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: zutritt-backend
+  # Lokale Entwicklung: PostgreSQL aus docker-compose.yml (Port 5433).
+  # In Produktion per Umgebungsvariablen überschreiben (SPRING_DATASOURCE_URL usw.).
+  datasource:
+    url: jdbc:postgresql://localhost:5433/zutritt
+    username: zutritt
+    password: zutritt
+  jpa:
+    # Flyway erstellt das Schema. Hibernate prüft nur, ob die Entities dazu passen.
+    hibernate:
+      ddl-auto: validate
+    # Keine DB-Zugriffe mehr im Controller nach Ende der Transaktion.
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+app:
+  access:
+    minimum-age: 18
+  # Demo-Modus: Seeding beim Start + Reset jede Nacht um 3 Uhr. LÖSCHT ALLE DATEN. Nur für die Demo!
+  demo:
+    enabled: true

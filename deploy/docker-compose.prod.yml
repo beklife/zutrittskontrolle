@@ -1,0 +1,99 @@
+# Production: runs behind an existing Traefik (with Let's Encrypt).
+# Start:  cd deploy && cp .env.example .env  (fill in values)  &&  docker compose -f docker-compose.prod.yml up -d --build
+#
+# Routing on https://${DOMAIN}:
+#   /api/*            -> backend (with rate limit)
+#   /actuator/health  -> backend
+#   everything else   -> frontend (nginx)
+# Swagger UI and the other actuator endpoints are not reachable from outside.
+name: zutritt
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB fehlt}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER fehlt}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD fehlt}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks:
+      - internal
+
+  backend:
+    build:
+      context: ..
+      dockerfile: deploy/backend.Dockerfile
+    image: zutritt-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      APP_DEMO_ENABLED: "true"
+    networks:
+      - internal
+      - traefik
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=${TRAEFIK_NETWORK}
+      - traefik.http.services.zutritt-backend.loadbalancer.server.port=8080
+      # API with rate limit (per client IP: on average 10 requests/s, short bursts up to 30)
+      - traefik.http.routers.zutritt-api.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)
+      - traefik.http.routers.zutritt-api.entrypoints=websecure
+      - traefik.http.routers.zutritt-api.tls.certresolver=${CERT_RESOLVER}
+      - traefik.http.routers.zutritt-api.middlewares=zutritt-ratelimit
+      - traefik.http.routers.zutritt-api.service=zutritt-backend
+      - traefik.http.middlewares.zutritt-ratelimit.ratelimit.average=10
+      - traefik.http.middlewares.zutritt-ratelimit.ratelimit.period=1s
+      - traefik.http.middlewares.zutritt-ratelimit.ratelimit.burst=30
+      # Health endpoint only (not the other actuator endpoints)
+      - traefik.http.routers.zutritt-health.rule=Host(`${DOMAIN}`) && Path(`/actuator/health`)
+      - traefik.http.routers.zutritt-health.entrypoints=websecure
+      - traefik.http.routers.zutritt-health.tls.certresolver=${CERT_RESOLVER}
+      - traefik.http.routers.zutritt-health.service=zutritt-backend
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: deploy/frontend.Dockerfile
+    image: zutritt-frontend
+    restart: unless-stopped
+    networks:
+      - traefik
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=${TRAEFIK_NETWORK}
+      - traefik.http.services.zutritt-frontend.loadbalancer.server.port=80
+      # Everything else -> frontend. Priority 1 = lowest, so the /api and health routers always win.
+      - traefik.http.routers.zutritt-web.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.zutritt-web.priority=1
+      - traefik.http.routers.zutritt-web.entrypoints=websecure
+      - traefik.http.routers.zutritt-web.tls.certresolver=${CERT_RESOLVER}
+      - traefik.http.routers.zutritt-web.service=zutritt-frontend
+      # HTTP -> HTTPS redirect for the whole domain
+      - traefik.http.routers.zutritt-http.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.zutritt-http.entrypoints=web
+      - traefik.http.routers.zutritt-http.middlewares=zutritt-https-redirect
+      - traefik.http.routers.zutritt-http.service=zutritt-frontend
+      - traefik.http.middlewares.zutritt-https-redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.zutritt-https-redirect.redirectscheme.permanent=true
+
+volumes:
+  db-data:
+
+networks:
+  internal:
+  traefik:
+    external: true
+    name: ${TRAEFIK_NETWORK:?TRAEFIK_NETWORK fehlt}

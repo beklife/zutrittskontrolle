@@ -1,0 +1,9 @@
+.git
+**/node_modules
+**/dist
+**/target
+**/.angular
+frontend/test-results
+frontend/playwright-report
+**/.env
+.remember

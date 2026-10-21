@@ -1,0 +1,14 @@
+# Profil "prod": aktiv mit SPRING_PROFILES_ACTIVE=prod.
+# Datenbank-Zugang kommt aus Umgebungsvariablen (SPRING_DATASOURCE_URL, _USERNAME, _PASSWORD).
+
+# Swagger UI und OpenAPI-JSON sind in Produktion aus.
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+management:
+  endpoint:
+    health:
+      show-details: never
