@@ -8,11 +8,21 @@
   .field {
     margin-bottom: 0;
   }
+
+  // Dropdown and button: same height and font size, so they line up.
+  select,
+  .btn--large {
+    height: 3rem;
+    font-size: 1.125rem;
+  }
+
+  select {
+    min-width: 20rem;
+  }
 }
 
 .btn--large {
-  font-size: 1.125rem;
-  padding: 0.6rem 2rem;
+  padding: 0 2rem;
 }
 
 .result-region {
