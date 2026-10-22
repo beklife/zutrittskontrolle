@@ -6,7 +6,7 @@
 Eine kleine, aber vollständige Web-Anwendung: Ein **Eingangsterminal** prüft, ob ein Spieler die Spielhalle betreten darf.
 Das **Personal** verwaltet Spieler und kann sie sperren. Jeder Zutrittsversuch wird **protokolliert**.
 
-Live-Demo: `https://[DOMAIN]` · Quellcode: <https://github.com/beklife/zutrittskontrolle>
+Live-Demo: <https://zutritt-demo.duckdns.org> · Quellcode: <https://github.com/beklife/zutrittskontrolle>
 
 ## Warum?
 
