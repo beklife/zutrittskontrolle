@@ -1,0 +1,39 @@
+# Traefik as reverse proxy for a fresh server (only needed once per server).
+# Start:  cd deploy/traefik && cp .env.example .env (fill in) && docker network create traefik && docker compose up -d
+#
+# - Port 80/443 open to the internet
+# - Let's Encrypt certificates via HTTP challenge, certresolver name: "letsencrypt"
+# - Entrypoints "web" (80) and "websecure" (443) -> same names as in ../docker-compose.prod.yml
+name: traefik
+
+services:
+  traefik:
+    image: traefik:v3.7
+    restart: unless-stopped
+    command:
+      - --providers.docker=true
+      # Only containers with label traefik.enable=true are published.
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=traefik
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:?ACME_EMAIL fehlt}
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+      - --log.level=INFO
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Read-only: Traefik only needs to see the containers and their labels.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+    networks:
+      - traefik
+
+volumes:
+  letsencrypt:
+
+networks:
+  traefik:
+    external: true
